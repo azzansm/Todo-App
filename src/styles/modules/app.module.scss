@@ -1,0 +1,44 @@
+@import '../_mixins.scss';
+
+.root {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background-color: #31363f;
+    overflow: hidden;
+	padding-top: 2rem;
+} 
+
+.app__wrapper {
+	max-width: 800px;
+	width: 90%;
+	margin: 0 auto;
+	margin-bottom: 2rem;
+	margin-top: 5rem;
+	position: relative;
+}
+  
+.appHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 2rem;
+}
+  
+.content__wrapper {
+	background-color:#B6BBC4;
+	max-height: 350px;
+	overflow-y: scroll;
+	padding: 3rem;
+}
+  
+.emptyText {
+	font-size: 1.7rem;
+	font-weight: 600;
+	color: #31304D;
+	text-align: center;
+	margin: 2rem auto;
+	padding: 1rem 2rem;
+	width: fit-content;
+	height: auto;
+}
