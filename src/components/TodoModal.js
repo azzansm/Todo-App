@@ -3,43 +3,60 @@ import { MdOutlineClose } from 'react-icons/md';
 import { useDispatch } from 'react-redux';
 import { v4 as uuid } from 'uuid';
 import toast from 'react-hot-toast';
-// import { add } from 'date-fns';
-import { addTodo } from '../slices/todoSlice';
+import { addTodo, updateTodo } from '../slices/todoSlice';
 import styles from '../styles/modules/modal.module.scss';
 import Button from './Button';
 
-function TodoModal({ modalOpen, setModalOpen }) {
+function TodoModal({ type, modalOpen, setModalOpen, todo }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('incomplete');
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const modalContainer = document.getElementById('modalContainer');
-    if (modalContainer) {
-      modalContainer.scrollTop = modalContainer.scrollHeight;
+    if (type === 'update' && todo) {
+      setTitle(todo.title);
+      setDescription(todo.description);
+      setStatus(todo.status);
+    } else {
+      setTitle('');
+      setDescription('');
+      setStatus('incomplete');
     }
-  }, [modalOpen]);
+  }, [type, todo, modalOpen]);
 
-  const handleAddTask = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!title) {
       toast.error('Please enter a title for the task');
       return;
     }
 
     const newTodo = {
-      id: uuid(),
+      id: todo ? todo.id : uuid(),
       title,
-      description,
+      description, // Include description in newTodo object
       status,
     };
 
-    dispatch(addTodo(newTodo));
-    toast.success('Task Added Sucessfully');
+    if (type === 'add') {
+      dispatch(addTodo(newTodo));
+      toast.success('Task Added Successfully');
+    } else if (type === 'update' && todo) {
+      if (
+        todo.title !== title ||
+        todo.status !== status ||
+        todo.description !== description
+      ) {
+        dispatch(updateTodo({ ...todo, ...newTodo }));
+        toast.success('Task Updated Successfully');
+      } else {
+        toast.error('No changes made');
+        return;
+      }
+    }
     setTitle('');
-    setDescription(' ');
+    setDescription('');
     setStatus('incomplete');
     setModalOpen(false);
   };
@@ -47,7 +64,7 @@ function TodoModal({ modalOpen, setModalOpen }) {
   return (
     modalOpen && (
       <div className={styles.wrapper}>
-        <div className={styles.container} id="modalContainer">
+        <div className={styles.container}>
           <div
             className={styles.closeButton}
             onClick={() => setModalOpen(false)}
@@ -57,8 +74,11 @@ function TodoModal({ modalOpen, setModalOpen }) {
           >
             <MdOutlineClose />
           </div>
-          <form className={styles.form} onSubmit={(e) => handleAddTask(e)}>
-            <h1 className={styles.formTitle}>Add Task</h1>
+
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <h1 className={styles.formTitle}>
+              {type === 'add' ? 'Add Task' : 'Update Task'}{' '}
+            </h1>
             <label htmlFor="title">
               Title
               <input
@@ -79,10 +99,10 @@ function TodoModal({ modalOpen, setModalOpen }) {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </label>
-            <label htmlFor="type">
+            <label htmlFor="status">
               Status
               <select
-                id="type"
+                id="status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
@@ -92,7 +112,7 @@ function TodoModal({ modalOpen, setModalOpen }) {
             </label>
             <div className={styles.buttonContainer}>
               <Button type="submit" variant="primary">
-                Add Task
+                {type === 'add' ? 'Add Task' : 'Update Task'}{' '}
               </Button>
               <Button
                 type="button"

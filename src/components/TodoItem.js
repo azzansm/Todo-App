@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-// import { format } from 'date-fns';
-import { MdDelete } from 'react-icons/md';
+import { MdDelete, MdEdit } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -8,6 +7,7 @@ import { getClasses } from '../utils/getClasses';
 import styles from '../styles/modules/todoItem.module.scss';
 import { deleteTodo, updateTodo } from '../slices/todoSlice';
 import CheckButton from './CheckButton';
+import TodoModal from './TodoModal';
 
 const child = {
   hidden: { y: 20, opacity: 0 },
@@ -20,6 +20,8 @@ const child = {
 function TodoItem({ todo }) {
   const dispatch = useDispatch();
   const [checked, setChecked] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false); // Add state for add modal
 
   useEffect(() => {
     if (todo.status === 'complete') {
@@ -33,9 +35,14 @@ function TodoItem({ todo }) {
     dispatch(deleteTodo(todo.id));
     toast.success('Todo Deleted');
   };
-  //   const handleUpdate = () => {
-  //     console.log('updating');
-  //   };
+
+  const handleUpdate = () => {
+    setUpdateModalOpen(true);
+  };
+
+  const handleAdd = () => {
+    setAddModalOpen(true);
+  };
 
   const handleCheck = () => {
     setChecked(!checked);
@@ -47,51 +54,53 @@ function TodoItem({ todo }) {
     );
   };
 
-  // const formattedTime =
-  //   todo.time instanceof Date
-  //     ? `Added on ${format(todo.time, 'dd/MM/yyyy')}`
-  //     : '';
-
   return (
-    <motion.div className={styles.item} variants={child}>
-      <div className={styles.todoDetails}>
-        <CheckButton checked={checked} handleCheck={handleCheck} />
-        <div className={styles.texts}>
-          <p
-            className={getClasses([
-              styles.todoText,
-              todo.status === 'complete' && styles['todoText--completed'],
-            ])}
-          >
-            {todo.title}
-          </p>
-          <div className={styles.descriptionContainer}>
-            <p className={styles.description}>{todo.description}</p>
+    <>
+      <motion.div className={styles.item} variants={child}>
+        <div className={styles.todoDetails}>
+          <CheckButton checked={checked} handleCheck={handleCheck} />
+          <div className={styles.texts}>
+            <p
+              className={getClasses([
+                styles.todoText,
+                todo.status === 'complete' && styles['todoText--completed'],
+              ])}
+            >
+              {todo.title}
+            </p>
+            {todo.description && (
+              <p className={styles.description}>{todo.description}</p>
+            )}
           </div>
-          {/* <p className={styles.time}>{formattedTime}</p> */}
         </div>
-      </div>
-      <div className={styles.todoActions}>
-        <div
-          className={styles.icon}
-          onClick={handleDelete}
-          onKeyDown={handleDelete}
-          role="button"
-          tabIndex={0}
-        >
-          <MdDelete />
+        <div className={styles.todoActions}>
+          <div
+            className={styles.icon}
+            onClick={handleDelete}
+            onKeyDown={handleDelete}
+            tabIndex={0}
+            role="button"
+          >
+            <MdDelete />
+          </div>
+          <div
+            className={styles.icon}
+            onClick={todo.id ? handleUpdate : handleAdd} // Update or add based on whether todo has an id
+            onKeyDown={todo.id ? handleUpdate : handleAdd} // Update or add based on whether todo has an id
+            tabIndex={0}
+            role="button"
+          >
+            <MdEdit />
+          </div>
         </div>
-        {/* <div
-          className={styles.icon}
-          onClick={handleUpdate}
-          onKeyDown={handleUpdate}
-          role="button"
-          tabIndex={0}
-        >
-          <MdEdit />
-        </div> */}
-      </div>
-    </motion.div>
+      </motion.div>
+      <TodoModal
+        type={todo.id ? 'update' : 'add'} // Pass 'update' if todo has an id, otherwise pass 'add'
+        modalOpen={todo.id ? updateModalOpen : addModalOpen} // Open update modal if todo has an id, otherwise open add modal
+        setModalOpen={todo.id ? setUpdateModalOpen : setAddModalOpen} // Set modal open state based on whether todo has an id
+        todo={todo}
+      />
+    </>
   );
 }
 
